@@ -1,0 +1,152 @@
+name: REAL_ESTATE_INCOME_BY_REGION
+description: |-
+  Supports tracking house prices, gross income inflows, and enables comparisons by metro area, state, or county.
+  Track and compare home prices vs gross income for any geography (city, county, metro area, state).
+  Allows filtering on geo names or levels without being locked to just Phoenix.
+tables:
+  - name: FHFA_HOUSE_PRICE_ATTRIBUTES
+    base_table:
+      database: REAL_ESTATE_DB
+      schema: REAL_ESTATE
+      table: FHFA_HOUSE_PRICE_ATTRIBUTES
+  - name: FHFA_HOUSE_PRICE_TIMESERIES
+    base_table:
+      database: REAL_ESTATE_DB
+      schema: REAL_ESTATE
+      table: FHFA_HOUSE_PRICE_TIMESERIES
+    facts:
+      - name: VALUE
+        synonyms:
+          - amount
+          - quantity
+          - figure
+          - number
+          - measurement
+          - magnitude
+          - size
+          - total
+          - count
+        description: The FHFA House Price Index value for a specific geographic area, representing the relative change in house prices over time, with 1991Q1 as the base period (set to 100).
+        expr: VALUE
+        data_type: NUMBER(6,2)
+        sample_values:
+          - '101.74'
+          - '105.88'
+          - '99.04'
+    time_dimensions:
+      - name: DATE
+        synonyms:
+          - day
+          - timestamp
+          - datestamp
+          - calendar_date
+          - record_date
+          - entry_date
+          - log_date
+          - timestamp_date
+        description: Date of the house price index observation.
+        expr: DATE
+        data_type: DATE
+        sample_values:
+          - '1984-12-31'
+          - '1981-12-31'
+          - '1995-09-30'
+  - name: GEOGRAPHY_INDEX
+    base_table:
+      database: REAL_ESTATE_DB
+      schema: REAL_ESTATE
+      table: GEOGRAPHY_INDEX
+  - name: GEOGRAPHY_RELATIONSHIPS
+    base_table:
+      database: REAL_ESTATE_DB
+      schema: REAL_ESTATE
+      table: GEOGRAPHY_RELATIONSHIPS
+    dimensions:
+      - name: GEO_ID
+        synonyms:
+          - geographic_identifier
+          - geographic_code
+          - location_id
+          - geo_code
+          - geographic_key
+          - location_identifier
+        description: Unique identifier for geographic locations, including zip codes and geographic IDs.
+        expr: GEO_ID
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - zip/76136
+          - geoId/C33460
+          - geoId/4817000
+      - name: GEO_NAME
+        synonyms:
+          - geographic_name
+          - location_name
+          - place_name
+          - geographic_location
+          - area_name
+          - region_name
+          - territory_name
+        description: Geographic names of counties, cities, or towns.
+        expr: GEO_NAME
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - Florence County
+          - Crandon
+          - Standardville
+      - name: RELATED_GEO_ID
+        synonyms:
+          - parent_geo_id
+          - associated_geo_id
+          - linked_geo_id
+          - connected_geo_id
+          - related_location_id
+          - associated_location_id
+        description: Unique identifier for a related geographic location, such as a zip code or geographic ID, used to establish relationships between different geographic entities.
+        expr: RELATED_GEO_ID
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - zip/96922
+          - zip/85640
+          - geoId/C31540
+  - name: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
+    base_table:
+      database: REAL_ESTATE_DB
+      schema: REAL_ESTATE
+      table: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
+    facts:
+      - name: VALUE
+        synonyms:
+          - amount
+          - quantity
+          - measure
+          - magnitude
+          - figure
+          - number
+          - count
+          - total
+          - sum
+        description: The number of people who moved from one state to another in the United States, as reported by the Internal Revenue Service (IRS), representing the count of individuals who filed tax returns in a different state than in the previous year.
+        expr: VALUE
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '1085'
+          - '747000'
+          - '28'
+    time_dimensions:
+      - name: DATE
+        synonyms:
+          - day
+          - timestamp
+          - datestamp
+          - calendar_date
+          - record_date
+          - entry_date
+          - log_date
+          - timestamp_date
+        description: The year in which the migration occurred, represented as a December 31st date to facilitate time-series analysis.
+        expr: DATE
+        data_type: DATE
+        sample_values:
+          - '2018-12-31'
+          - '2016-12-31'
+          - '2014-12-31'

@@ -9,6 +9,83 @@ tables:
       database: REAL_ESTATE_DB
       schema: REAL_ESTATE
       table: FHFA_HOUSE_PRICE_ATTRIBUTES
+    description: This view provides a list of attributes related to house prices, including variable names, property classifications, index types, frequencies, seasonal adjustments, and units, sourced from the FHFA (Federal Housing Finance Agency) dataset.
+    synonyms:
+      - FHFA House Price Attributes
+      - House Price Data
+      - Real Estate Market Data
+      - Housing Market Attributes
+      - FHFA Attributes
+      - US Real Estate Data
+    dimensions:
+      - expr: INDEX_TYPE
+        name: INDEX_TYPE
+        synonyms:
+          - index category
+          - classification type
+          - indicator type
+          - metric type
+          - data type
+          - category name
+        description: The type of house price index, such as "Purchase Only" or "All-Transactions", indicating whether the index is based on purchase prices only or a combination of purchase and refinance transactions.
+        sample_values:
+          - purchase-only
+          - all-transactions
+          - expanded-data
+        data_type: VARCHAR(16777216)
+      - expr: SEASONALLY_ADJUSTED
+        name: SEASONALLY_ADJUSTED
+        synonyms:
+          - seasonal adjustment
+          - adjusted for seasonality
+          - seasonal variation removed
+          - deseasonalized
+          - seasonally normalized
+        description: This column indicates whether the house price index values have been adjusted to account for seasonal fluctuations, which are regular and predictable changes that occur at the same time every year, such as increased demand during the summer months.
+        data_type: BOOLEAN
+        sample_values:
+          - 'FALSE'
+          - 'TRUE'
+      - expr: VARIABLE
+        name: VARIABLE
+        synonyms:
+          - value
+          - attribute
+          - metric
+          - measure
+          - indicator
+          - parameter
+          - factor
+          - element
+        description: The type of house price attribute being measured, such as "Purchase Only", "All-Transactions", "Purchase Only Seasonally Adjusted", etc.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - FHFA_HPI_manufactured_purchase-only_quarterly_NSA
+          - FHFA_HPI_manufactured_all-transactions_quarterly_NSA
+          - FHFA_HPI_traditional_purchase-only_monthly_NSA
+    time_dimensions: []
+    filters:
+      - expr: INDEX_TYPE = 'purchase-only'
+        name: purchase_only_index
+        synonyms:
+          - purchase only house price index
+          - purchase only home price index
+          - purchase only real estate index
+          - purchase only housing market index
+          - purchase only home price indicator
+        description: The purchase-only house price index is a measure of the average change in the price of single-family homes with mortgages that are purchased, rather than refinanced, and is based on data from Fannie Mae and Freddie Mac.
+      - expr: SEASONALLY_ADJUSTED = TRUE
+        name: seasonally_adjusted
+        synonyms:
+          - seasonal adjustment
+          - adjusted for seasonality
+          - seasonal variation removed
+          - deseasonalized
+          - seasonally normalized
+        description: This column indicates whether the house price index values have been adjusted to account for seasonal fluctuations, which are regular and predictable changes that occur at the same time every year, such as increased demand during the summer months.
+    primary_key:
+      columns:
+        - VARIABLE
   - name: FHFA_HOUSE_PRICE_TIMESERIES
     base_table:
       database: REAL_ESTATE_DB
@@ -17,15 +94,9 @@ tables:
     facts:
       - name: VALUE
         synonyms:
-          - amount
-          - quantity
-          - figure
-          - number
           - measurement
-          - magnitude
-          - size
-          - total
-          - count
+          - hpi
+          - avg home price
         description: The FHFA House Price Index value for a specific geographic area, representing the relative change in house prices over time, with 1991Q1 as the base period (set to 100).
         expr: VALUE
         data_type: NUMBER(6,2)
@@ -33,17 +104,18 @@ tables:
           - '101.74'
           - '105.88'
           - '99.04'
+        default_aggregation: 2
     time_dimensions:
       - name: DATE
         synonyms:
           - day
           - timestamp
           - datestamp
-          - calendar_date
-          - record_date
-          - entry_date
-          - log_date
-          - timestamp_date
+          - calendar date
+          - record date
+          - entry date
+          - log date
+          - timestamp date
         description: Date of the house price index observation.
         expr: DATE
         data_type: DATE
@@ -51,11 +123,292 @@ tables:
           - '1984-12-31'
           - '1981-12-31'
           - '1995-09-30'
+    description: This view provides a time series dataset of house prices in the United States, sourced from the Federal Housing Finance Agency (FHFA). It contains geographic identifiers, variable names and descriptions, dates, values, and units of measurement for house price data, allowing users to analyze and track changes in house prices over time across different regions.
+    synonyms:
+      - FHFA House Price Timeseries
+      - US Real Estate Index
+      - Housing Market Trends
+      - Home Price Data
+      - Real Estate Market Analysis
+      - US Housing Market Data
+      - House Price Index
+      - Real Estate Trends
+      - US Home Prices
+    dimensions:
+      - expr: GEO_ID
+        name: GEO_ID
+        description: Unique geographic identifier for the metropolitan area, county, or state.
+        synonyms:
+          - geographic id
+          - location id
+          - region id
+          - area id
+          - geographic identifier
+          - location identifier
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - geoId/05
+          - geoId/M22744
+          - geoId/M33124
+      - expr: VARIABLE_NAME
+        name: VARIABLE_NAME
+        description: The type of house price index being reported, such as "Purchase Only" or "All-Transactions".
+        synonyms:
+          - variable description
+          - field name
+          - column name
+          - attribute name
+          - data element
+          - field description
+        sample_values:
+          - FHFA_HPI traditional all-transactions quarterly Not Seasonally Adjusted
+          - FHFA_HPI traditional expanded-data quarterly Seasonally Adjusted
+          - FHFA_HPI traditional purchase-only quarterly Seasonally Adjusted
+        data_type: VARCHAR(16777216)
+      - expr: UNIT
+        name: UNIT
+        synonyms:
+          - unit_of_measurement
+          - measurement_unit
+          - unit_type
+          - unit_description
+          - unit_name
+          - unit_label
+          - unit_category
+        description: The unit of measurement for the house price index, which can be either "Index" or "Percent Change", indicating whether the value represents an index number or a percentage change from the previous period.
+        sample_values:
+          - Index, Percent Change
+        data_type: VARCHAR(16777216)
+      - expr: VARIABLE
+        name: VARIABLE
+        synonyms:
+          - indicator
+          - metric
+          - measure
+          - parameter
+          - field
+          - attribute
+          - column_name
+          - data_element
+          - statistic
+        description: The type of house price index being reported, such as "Purchase Only" or "All-Transactions".
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - FHFA_HPI_traditional_purchase-only_quarterly_NSA
+          - FHFA_HPI_traditional_all-transactions_quarterly_NSA
+          - FHFA_HPI_traditional_expanded-data_quarterly_SA
+    filters:
+      - expr: UNIT='Index'
+        name: INDEX_UNIT_ONLY
+        synonyms:
+          - index unit
+          - unit of measurement
+          - measurement unit
+          - unit type
+          - unit description
+        description: The index_unit_only column represents the house price index value for a specific geographic area, expressed as a numerical value without any additional units or percentages, allowing for direct comparison of house price changes over time.
+      - expr: VARIABLE_NAME  ILIKE ('%purchase_only%')
+        name: PURCHASE_ONLY_INDEX_TYPE
+        synonyms:
+          - purchase index filter
+          - poi filter
+        description: The type of house price index being reported, such as "Purchase Only" or "All-Transactions".
+    metrics:
+      - expr: AVG(VALUE)
+        name: AVERAGE_HOME_PRICE_INDEX
+        synonyms:
+          - home price average
+          - average house value
+          - median home price
+          - home price index average
+          - average house price index value
+        description: The average home price index is a statistical measure that tracks changes in the value of single-family homes in the United States over time, expressed as a percentage of the value in a base year, providing a benchmark for evaluating housing market trends and fluctuations.
+      - expr: ((AVG(value) - LAG(AVG(value), 12)) / LAG(AVG(value), 12)) * 100
+        name: YOY_PCT_CHANGE_HOME_PRICE_INDEX
+        synonyms:
+          - year over year home price change
+          - annual home price change
+          - home price index yearly change
+          - yearly home price percentage change
+          - home price yearly percentage change
+        description: The year-over-year percentage change in the home price index, representing the annual rate of change in the average price of homes in a given area.
   - name: GEOGRAPHY_INDEX
     base_table:
       database: REAL_ESTATE_DB
       schema: REAL_ESTATE
       table: GEOGRAPHY_INDEX
+    description: This view provides a comprehensive index of geographic locations, offering a standardized reference for various levels of geographical entities. It contains essential information such as unique identifiers, names, and classification levels, as well as standardized codes from the International Organization for Standardization (ISO) for countries and regions.
+    synonyms:
+      - geography index
+      - geo index
+      - geographic index
+      - location index
+      - geo location index
+      - geographic location index
+      - region index
+      - area index
+      - territory index
+    dimensions:
+      - expr: GEO_ID
+        name: GEO_ID
+        description: Unique identifier for the geographic area.
+        synonyms:
+          - geographic id
+          - location id
+          - geography key
+          - geo code
+          - geographic code
+          - location code
+          - geo identifier
+          - spatial id
+        sample_values:
+          - wikidataId/Q1973
+          - geoId/0618164
+          - geoId/1523750
+        data_type: VARCHAR(16777216)
+      - expr: GEO_NAME
+        name: GEO_NAME
+        description: The full name of the geographic entity, such as a city, state, or country.
+        synonyms:
+          - geographic name
+          - location name
+          - place name
+          - region name
+          - area name
+          - territory name
+          - geographic area
+          - location description
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - Binghamton
+          - Kaimū
+          - Bloomfield Township
+      - expr: LEVEL
+        name: LEVEL
+        synonyms:
+          - hierarchy
+          - category
+          - classification
+          - tier
+          - rank
+          - grade
+          - grouping
+          - stratum
+        description: The level of geographic detail, such as country, state, city, or zip code, that the corresponding geography index value represents.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - County
+          - AdministrativeArea1
+          - City
+      - expr: ISO_3166_2_CODE
+        name: ISO_3166_2_CODE
+        synonyms:
+          - region code
+          - geographic code
+          - iso subdivision code
+          - administrative area code
+          - province code
+          - state code
+          - subdivision code
+        description: A two-letter code that represents a country's subdivision, such as a state or province, as defined by the International Organization for Standardization (ISO) 3166-2 standard.
+        sample_values:
+          - ISO 3166-2:PA
+          - ISO 3166-2:AW
+        data_type: VARCHAR(16777216)
+      - expr: ISO_ALPHA2
+        name: ISO_ALPHA2
+        description: A two-character code that represents the country in which the geography is located, as defined by the International Organization for Standardization (ISO).
+        synonyms:
+          - two letter code
+          - country code
+          - iso two letter
+          - geographic code
+          - two character code
+          - alpha 2 code
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - MO
+          - 'ON'
+      - expr: ISO_ALPHA3
+        name: ISO_ALPHA3
+        synonyms:
+          - country code
+          - iso 3 code
+          - three letter code
+          - alpha 3 code
+          - geographic code
+          - territory code
+          - region code
+        description: A three-letter code that represents the country name, as defined by the International Organization for Standardization (ISO), used to uniquely identify a country or territory.
+        sample_values:
+          - GBR
+          - ASM
+          - MCO
+        data_type: VARCHAR(16777216)
+      - expr: ISO_NAME
+        name: ISO_NAME
+        data_type: VARCHAR(16777216)
+        description: The full name of a geographic location as recognized by the International Organization for Standardization (ISO).
+        synonyms:
+          - country name
+          - country title
+          - geographic name
+          - geographical name
+          - territory name
+          - region name
+          - area name
+        sample_values:
+          - Falkland Islands (the) [Malvinas]
+          - United States Minor Outlying Islands (the)
+      - expr: ISO_NUMERIC_CODE
+        name: ISO_NUMERIC_CODE
+        synonyms:
+          - iso number
+          - country code
+          - numeric country id
+          - iso numeric id
+          - iso code number
+          - country numeric code
+        description: A unique numerical code assigned to each country by the International Organization for Standardization (ISO), used for identification and reference purposes.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - '004'
+          - '056'
+          - '270'
+    filters:
+      - expr: iso_alpha2 = 'US'
+        name: US_ONLY
+        description: Indicates whether the geography is specific to the United States (true) or not (false).
+        synonyms:
+          - usa only
+          - united states only
+          - us exclusive
+          - america only
+          - north america only
+      - expr: LEVEL = 'state'
+        name: STATES_ONLY
+        synonyms:
+          - states only
+          - us states
+          - usa states
+          - american states
+          - state list
+          - us geography
+          - usa geography
+        description: Indicates whether the geography index only contains state-level data (true) or includes lower-level geographies such as counties or cities (false).
+      - expr: ISO_ALPHA3
+        name: NORTH_AMERICA_ONLY
+        description: Indicates whether the geography index is limited to North America only.
+        synonyms:
+          - north america exclusive
+          - usa and canada only
+          - na only
+          - north american region
+          - american continent only
+          - northern america specific
+    primary_key:
+      columns:
+        - GEO_ID
   - name: GEOGRAPHY_RELATIONSHIPS
     base_table:
       database: REAL_ESTATE_DB
@@ -108,41 +461,94 @@ tables:
           - zip/96922
           - zip/85640
           - geoId/C31540
+      - expr: LEVEL
+        name: GEO_LEVEL
+        synonyms:
+          - geographic level
+          - administrative level
+          - geographic hierarchy
+          - location level
+          - administrative division
+          - geographic rank
+        description: Geographic level of the relationship, such as country, state, city, or zip code, indicating the scope or granularity of the geographic area being referenced.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - CensusZipCodeTabulationArea
+          - City
+          - State
+      - expr: RELATED_GEO_NAME
+        name: RELATED_GEO_NAME
+        description: The name of the related geographic entity, such as a parent or child region, that is associated with the current geographic entity.
+        synonyms:
+          - associated geography
+          - connected location
+          - linked location name
+          - parent geography
+          - related location
+          - corresponding geography
+          - associated location name
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - '96922'
+          - Paria
+          - Virgin Islands
+      - expr: RELATIONSHIP_TYPE
+        name: RELATIONSHIP_TYPE
+        synonyms:
+          - connection type
+          - relationship category
+          - geo link type
+          - hierarchy level
+          - geo association type
+          - link category
+          - relationship classification
+        description: The type of relationship between two geographic entities, such as "contains", "adjacent to", "shares border with", etc.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - Overlaps
+          - Contains
+    description: This view represents the hierarchical relationships between different geographic entities, such as cities, states, and countries, providing a mapping of how these entities are connected to each other, including their respective IDs and levels within the geographic hierarchy, as well as the type of relationship that exists between them.
+    synonyms:
+      - geography relationships
+      - geographic relationships
+      - location relationships
+      - geo relationships
+      - spatial relationships
+      - regional connections
+      - territorial associations
+    primary_key:
+      columns:
+        - GEO_ID
   - name: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
     base_table:
       database: REAL_ESTATE_DB
       schema: REAL_ESTATE
       table: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
     facts:
-      - name: VALUE
+      - name: MIGRATION_VALUE_ORIGIN
         synonyms:
-          - amount
-          - quantity
-          - measure
-          - magnitude
-          - figure
-          - number
-          - count
-          - total
-          - sum
-        description: The number of people who moved from one state to another in the United States, as reported by the Internal Revenue Service (IRS), representing the count of individuals who filed tax returns in a different state than in the previous year.
+          - agi flow
+          - returns flow
+          - migration amount
+        description: Total value of the migration metric (e.g. AGI, tax returns) over selected dimensions
         expr: VALUE
         data_type: NUMBER(38,0)
         sample_values:
           - '1085'
           - '747000'
           - '28'
+        default_aggregation: 1
     time_dimensions:
       - name: DATE
         synonyms:
           - day
           - timestamp
           - datestamp
-          - calendar_date
-          - record_date
-          - entry_date
-          - log_date
-          - timestamp_date
+          - calendar date
+          - record date
+          - entry date
+          - log date
+          - timestamp date
         description: The year in which the migration occurred, represented as a December 31st date to facilitate time-series analysis.
         expr: DATE
         data_type: DATE
@@ -150,3 +556,154 @@ tables:
           - '2018-12-31'
           - '2016-12-31'
           - '2014-12-31'
+    description: This view provides a timeseries dataset of migration patterns between geographic locations in the United States, sourced from the Internal Revenue Service (IRS), including the origin and destination geographic IDs, variable name, date, value, unit of measurement, and suppression status.
+    synonyms:
+      - migration timeseries
+      - origin destination migration
+      - population migration
+      - geographic migration
+      - migration data
+      - origin destination timeseries
+      - population movement
+      - geographic movement
+    dimensions:
+      - expr: FROM_GEO_ID
+        name: FROM_GEO_ID
+        synonyms:
+          - origin geoid
+          - source geoid
+          - starting location id
+          - initial geographic id
+          - departure geoid
+          - source location id
+        description: A unique geographic identifier for the origin county or state of migration.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - geoId/19113
+          - geoId/41
+          - geoId/02063
+      - expr: TO_GEO_ID
+        name: TO_GEO_ID
+        description: The unique geographic identifier for the destination county or state of the migration.
+        synonyms:
+          - destination geo id
+          - target location id
+          - receiving area id
+          - end location id
+          - arrival geo id
+          - destination location id
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - geoId/02020
+          - geoId/41
+          - geoId/02063
+      - expr: VARIABLE_NAME
+        name: METRIC_NAME
+        synonyms:
+          - metric
+          - measurement
+          - indicator
+          - statistic
+          - value name
+          - data point name
+          - variable
+          - field name
+          - column name
+          - data column
+        description: The name of the metric being measured in the migration timeseries data, such as "Number of Migrants", "Migration Rate", or "Population Change".
+        sample_values:
+          - Number of Returns
+          - Adjusted Gross Income
+          - Number of Individuals
+        data_type: VARCHAR(16777216)
+      - expr: UNIT
+        name: UNIT
+        synonyms:
+          - unit of measurement
+          - measurement unit
+          - unit type
+          - unit name
+          - unit description
+          - unit label
+          - measurement type
+          - data unit
+        description: The geographic unit of analysis for the migration data, which can be a state, county, metropolitan area, or other geographic entity.
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - Returns
+          - USD
+          - Individuals
+      - expr: SUPPRESSED
+        name: SUPPRESSED
+        synonyms:
+          - censored
+          - hidden
+          - obscured
+          - concealed
+          - redacted
+          - withheld
+          - restricted
+          - classified
+        description: This column indicates whether the data for a specific origin-destination pair has been suppressed due to low sample size or other confidentiality concerns, with a value of 'true' indicating suppression and 'false' indicating that the data is available.
+        data_type: NUMBER(38, 0)
+        sample_values:
+          - '1'
+          - '0'
+    metrics:
+      - expr: SUM(VALUE)
+        name: MIGRATION_VALUE_DESTINATION
+        synonyms:
+          - migration amount
+          - relocation count
+          - population shift
+          - movement number
+          - relocation quantity
+        description: The number of people who moved from one state to another, with the origin state being the state where the taxpayer filed their previous year's tax return and the destination state being the state where the taxpayer filed their current year's tax return.
+relationships:
+  - name: HOUSE_PRICE_INDEX_TO_ATTRIBUTES
+    join_type: left_outer
+    relationship_type: many_to_one
+    left_table: FHFA_HOUSE_PRICE_TIMESERIES
+    relationship_columns:
+      - left_column: VARIABLE
+        right_column: VARIABLE
+    right_table: FHFA_HOUSE_PRICE_ATTRIBUTES
+  - name: house_price_to_geography
+    join_type: left_outer
+    relationship_type: many_to_one
+    left_table: FHFA_HOUSE_PRICE_TIMESERIES
+    relationship_columns:
+      - left_column: GEO_ID
+        right_column: GEO_ID
+    right_table: GEOGRAPHY_INDEX
+  - name: migration_origin_to_geography
+    join_type: left_outer
+    relationship_type: many_to_one
+    left_table: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
+    relationship_columns:
+      - left_column: FROM_GEO_ID
+        right_column: GEO_ID
+    right_table: GEOGRAPHY_INDEX
+  - name: migration_destination_to_geography
+    join_type: left_outer
+    relationship_type: many_to_one
+    left_table: IRS_ORIGIN_DESTINATION_MIGRATION_TIMESERIES
+    relationship_columns:
+      - left_column: TO_GEO_ID
+        right_column: GEO_ID
+    right_table: GEOGRAPHY_INDEX
+  - name: geography_to_relationships
+    join_type: left_outer
+    relationship_type: one_to_one
+    left_table: GEOGRAPHY_INDEX
+    relationship_columns:
+      - left_column: GEO_ID
+        right_column: GEO_ID
+    right_table: GEOGRAPHY_RELATIONSHIPS
+verified_queries:
+  - name: PhoenixMetro_Income_vs_HomePrice
+    question: provide a view that gives a year-by-year comparison of gross income migration inflows and average home prices for each county in the Phoenix metropolitan area. It combines IRS income migration data with FHFA house price indices, helping users analyze trends in wealth and real estate at the county level.
+    use_as_onboarding_question: true
+    sql: WITH county_map AS (SELECT geo_id, geo_name, related_geo_id, related_geo_name FROM real_estate.geography_relationships WHERE geo_name = 'Phoenix-Mesa-Chandler, AZ Metro Area' AND related_level = 'County'), gross_income_data AS (SELECT geo_id, geo_name AS msa, date, SUM(value) AS gross_income_inflow FROM real_estate.irs_origin_destination_migration_timeseries AS ts JOIN county_map ON county_map.related_geo_id = ts.to_geo_id WHERE ts.variable_name = 'Adjusted Gross Income' GROUP BY geo_id, msa, date), home_price_data AS (SELECT LAST_DAY(date, YEAR) AS end_date, AVG(value) AS home_price_index FROM real_estate.fhfa_house_price_timeseries AS ts JOIN real_estate.fhfa_house_price_attributes AS att ON ts.variable = att.variable WHERE geo_id IN (SELECT geo_id FROM county_map) AND att.index_type = 'purchase-only' AND att.seasonally_adjusted = TRUE GROUP BY end_date) SELECT gid.msa, gid.date, gid.gross_income_inflow, hpi.home_price_index FROM gross_income_data AS gid JOIN home_price_data AS hpi ON gid.date = hpi.end_date ORDER BY gid.date
+    verified_by: Shai leib
+    verified_at: 1751494341
